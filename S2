@@ -1,0 +1,88 @@
+#!/bin/bash
+
+echo "Script started"
+
+# Setting Time Limit (48 hours in seconds)
+time_limit=$((48 * 60 * 60))
+
+# Function to send team message
+send_team_message() {
+    DATE=$(date "+DATE: %d/%m/%y TIME: %H:%M:%S")
+    Title="ALERT FROM $HOSTNAME"
+    header="Content-Type: application/json"
+    nav_slack_hook="https://prod-63.westus.logic.azure.com:443/workflows/2f13c0b9.../triggers/manual/paths/invoke?api-version=2016-06-01&..."
+
+    # Create JSON payload
+    generate_post_data=$(cat <<EOF
+{
+    "summary": "Card \"VS-Code_Session_Time_Notification\"",
+    "themeColor": "0078D7",
+    "title": "$Title",
+    "sections": [
+        {
+            "activitySubtitle": "$DATE",
+            "facts": [
+                {
+                    "name": "User:",
+                    "value": "$userid"
+                },
+                {
+                    "name": "VS-code session ID:",
+                    "value": "$pid"
+                }
+            ],
+            "text": "VS-Session with process ID: $pid has been running for more than 48-hours by user $userid."
+        }
+    ]
+}
+EOF
+    )
+
+    echo "Sending payload:"
+    echo "$generate_post_data"
+
+    # Print the full curl command for debugging
+    echo "curl -s -o /dev/null -w \"%{http_code}\" -H \"$header\" --data \"$generate_post_data\" \"$nav_slack_hook\""
+
+    # Send POST request and capture detailed response
+    response=$(curl -s -o /dev/null -w "%{http_code}" -H "$header" --data "$generate_post_data" "$nav_slack_hook")
+    curl_output=$(curl -s -H "$header" --data "$generate_post_data" "$nav_slack_hook")
+
+    # Debugging output
+    echo "cURL HTTP status code: $response"
+    echo "cURL response: $curl_output"
+
+    # Check if the HTTP status code indicates success
+    if [ "$response" -eq 202 ]; then
+        echo "Webhook sent successfully"
+    else
+        echo "Failed to send webhook. HTTP status code: $response"
+        echo "cURL response: $curl_output"
+    fi
+}
+
+# Main script logic
+echo "Checking for VS Code sessions"
+
+output=$(ps -eo pid,etimes,user:20,%cpu,%mem,comm | grep -e vscode-session)
+echo "Output of ps command:"
+echo "$output"
+
+if [ -n "$output" ]; then
+    while read -r line; do
+        pid=$(echo "$line" | awk '{print $1}')
+        etimes=$(echo "$line" | awk '{print $2}')
+        userid=$(echo "$line" | awk '{print $3}')
+
+        echo "PID: $pid, Elapsed Time: $etimes, User ID: $userid"
+
+        if [ "$etimes" -gt "$time_limit" ]; then
+            echo "Alert triggered for session with PID $pid and user $userid"
+            send_team_message
+        fi
+    done <<< "$output"
+else
+    echo "No vscode sessions found."
+fi
+
+echo "Script finished"
