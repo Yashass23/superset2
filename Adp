@@ -1,0 +1,67 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "VS-Code Session Time Notification",
+      "weight": "Bolder",
+      "size": "Medium"
+    },
+    {
+      "type": "TextBlock",
+      "text": "ALERT FROM nciendevapp08.localad.tech",
+      "weight": "Bolder",
+      "size": "Large",
+      "wrap": true
+    },
+    {
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "auto",
+          "items": [
+            {
+              "type": "TextBlock",
+              "text": "DATE: 17/07/24 TIME: 05:17:13",
+              "wrap": true
+            },
+            {
+              "type": "TextBlock",
+              "text": "User:",
+              "wrap": true
+            },
+            {
+              "type": "TextBlock",
+              "text": "VS-code session ID:",
+              "wrap": true
+            }
+          ]
+        },
+        {
+          "type": "Column",
+          "width": "stretch",
+          "items": [
+            {
+              "type": "TextBlock",
+              "text": "yalakkandy001",
+              "wrap": true
+            },
+            {
+              "type": "TextBlock",
+              "text": "169022",
+              "wrap": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "VS-Code sessions running for more than 48-hours.",
+      "wrap": true
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.3"
+}
