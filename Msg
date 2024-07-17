@@ -1,0 +1,5 @@
+### @{triggerBody()['title']}
+**Date**: @{triggerBody()['sections'][0]['activitySubtitle']}
+**User**: @{triggerBody()['sections'][0]['facts'][0]['value']}
+**VS-Code Session ID**: @{triggerBody()['sections'][0]['facts'][1]['value']}
+**Message**: VS-Code sessions running for more than 48-hours.
