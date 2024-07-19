@@ -1,0 +1,113 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "🚨 Grafana Alert Notification 🚨",
+          "weight": "Bolder",
+          "size": "ExtraLarge",
+          "color": "Attention",
+          "horizontalAlignment": "Center"
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "FactSet",
+          "facts": [
+            {
+              "title": "Alert Name:",
+              "value": "@{triggerBody()?['alerts'][0]['labels']['alertname']}"
+            },
+            {
+              "title": "Instance:",
+              "value": "@{triggerBody()?['alerts'][0]['labels']['instance']}"
+            },
+            {
+              "title": "Status:",
+              "value": "@{triggerBody()?['alerts'][0]['status']}"
+            },
+            {
+              "title": "Summary:",
+              "value": "@{triggerBody()?['alerts'][0]['annotations']['summary']}"
+            },
+            {
+              "title": "Starts At:",
+              "value": "@{triggerBody()?['alerts'][0]['startsAt']}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "🔗 Links",
+          "weight": "Bolder",
+          "size": "Medium",
+          "spacing": "Medium"
+        },
+        {
+          "type": "TextBlock",
+          "text": "[Silence Alert](@{triggerBody()?['alerts'][0]['silenceURL']})",
+          "wrap": true,
+          "weight": "Lighter",
+          "color": "Accent"
+        },
+        {
+          "type": "TextBlock",
+          "text": "[Dashboard URL](@{triggerBody()?['alerts'][0]['dashboardURL']})",
+          "wrap": true,
+          "weight": "Lighter",
+          "color": "Accent"
+        },
+        {
+          "type": "TextBlock",
+          "text": "[Panel URL](@{triggerBody()?['alerts'][0]['panelURL']})",
+          "wrap": true,
+          "weight": "Lighter",
+          "color": "Accent"
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "Alert Details",
+          "weight": "Bolder",
+          "size": "Medium",
+          "spacing": "Medium"
+        },
+        {
+          "type": "TextBlock",
+          "text": "State: **@{triggerBody()?['state']}**",
+          "wrap": true,
+          "spacing": "Small"
+        },
+        {
+          "type": "TextBlock",
+          "text": "Message: **@{triggerBody()?['message']}**",
+          "wrap": true,
+          "spacing": "Small"
+        },
+        {
+          "type": "TextBlock",
+          "text": "Alert Count: **@{length(triggerBody()?['alerts'])}**",
+          "wrap": true,
+          "spacing": "Small"
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.3"
+}
