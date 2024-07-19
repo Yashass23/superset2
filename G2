@@ -1,0 +1,118 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "[FIRING:1] TestAlert Grafana",
+      "weight": "Bolder",
+      "size": "Large",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "Status: FIRING",
+      "color": "Attention",
+      "wrap": true
+    },
+    {
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "stretch",
+          "items": [
+            {
+              "type": "FactSet",
+              "facts": [
+                {
+                  "title": "Instance:",
+                  "value": "@{triggerBody()['alerts'][0]['labels']['instance']}"
+                },
+                {
+                  "title": "Alert Name:",
+                  "value": "@{triggerBody()['alerts'][0]['labels']['alertname']}"
+                },
+                {
+                  "title": "Summary:",
+                  "value": "@{triggerBody()['alerts'][0]['annotations']['summary']}"
+                },
+                {
+                  "title": "Starts At:",
+                  "value": "@{triggerBody()['alerts'][0]['startsAt']}"
+                },
+                {
+                  "title": "Ends At:",
+                  "value": "@{triggerBody()['alerts'][0]['endsAt']}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "auto",
+          "items": [
+            {
+              "type": "TextBlock",
+              "text": "Silence URL:",
+              "weight": "Bolder",
+              "wrap": true
+            },
+            {
+              "type": "TextBlock",
+              "text": "Dashboard URL:",
+              "weight": "Bolder",
+              "wrap": true
+            },
+            {
+              "type": "TextBlock",
+              "text": "Panel URL:",
+              "weight": "Bolder",
+              "wrap": true
+            }
+          ]
+        },
+        {
+          "type": "Column",
+          "width": "stretch",
+          "items": [
+            {
+              "type": "TextBlock",
+              "text": "[Silence](@{triggerBody()['alerts'][0]['silenceURL']})",
+              "wrap": true
+            },
+            {
+              "type": "TextBlock",
+              "text": "[Dashboard](@{triggerBody()['alerts'][0]['dashboardURL']})",
+              "wrap": true
+            },
+            {
+              "type": "TextBlock",
+              "text": "[Panel](@{triggerBody()['alerts'][0]['panelURL']})",
+              "wrap": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "Grafana Alerts",
+      "weight": "Bolder",
+      "spacing": "Medium",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "Alert triggered from Grafana monitoring system.",
+      "wrap": true
+    }
+  ]
+}
