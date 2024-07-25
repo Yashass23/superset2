@@ -1,0 +1,55 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "[${triggerBody()?['alerts'][0]['status'].toUpperCase()}] ${triggerBody()?['alerts'][0]['labels']['alertname']} Grafana",
+      "weight": "Bolder",
+      "size": "Large",
+      "color": "${triggerBody()?['alerts'][0]['status'] == 'firing' ? 'Attention' : 'Good'}",
+      "wrap": true
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "Status:",
+          "value": "${triggerBody()?['alerts'][0]['status'].toUpperCase()}"
+        },
+        {
+          "title": "Instance:",
+          "value": "${triggerBody()?['alerts'][0]['labels']['instance']}"
+        },
+        {
+          "title": "Summary:",
+          "value": "${triggerBody()?['alerts'][0]['annotations']['summary']}"
+        },
+        {
+          "title": "Starts At:",
+          "value": "${triggerBody()?['alerts'][0]['startsAt']}"
+        },
+        {
+          "title": "Ends At:",
+          "value": "${triggerBody()?['alerts'][0]['endsAt']}"
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "Silence: [Silence](${triggerBody()?['alerts'][0]['silenceURL']})",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "Dashboard: [Dashboard](${triggerBody()?['alerts'][0]['dashboardURL']})",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "Panel: [Panel](${triggerBody()?['alerts'][0]['panelURL']})",
+      "wrap": true
+    }
+  ]
+}
