@@ -1,0 +1,71 @@
+#!/bin/bash
+
+# Webhook URL for Microsoft Teams channel
+TEAMS_WEBHOOK_URL="YOUR_TEAMS_WEBHOOK_URL"
+
+# Function to send message to Microsoft Teams channel
+send_teams_notification() {
+    message="$1"
+    payload="{\"text\": \"$message\"}"
+    curl -X POST -H "Content-Type: application/json" -d "$payload" "$TEAMS_WEBHOOK_URL"
+}
+
+# Function to convert size with K, M, G suffix to bytes, handling decimal points
+convert_to_bytes() {
+    size=$1
+    echo $size | awk '{
+        val = substr($0, 1, length($0)-1);
+        unit = substr($0, length($0), 1);
+        if (unit == "K") {
+            printf "%.0f\n", val * 1024;
+        } else if (unit == "M") {
+            printf "%.0f\n", val * 1024 * 1024;
+        } else if (unit == "G") {
+            printf "%.0f\n", val * 1024 * 1024 * 1024;
+        } else {
+            printf "%.0f\n", $0;
+        }
+    }'
+}
+
+# Get the list of users in the group
+GROUP_NAME="uzwu_rsw"
+USER_LIST=$(getent group $GROUP_NAME | awk -F: '{print $4}' | tr ',' ' ')
+IFS=' ' read -r -a USERS <<<"$USER_LIST"
+
+# Create an associative array for quick lookup
+declare -A GROUP_USERS
+for user in "${USERS[@]}"; do
+    GROUP_USERS["$user"]=1
+done
+
+# Generate quota report and save it to a file
+xfs_quota -X -c "report -h" /stripped > quota_report.txt
+
+# Read the quota report file line by line
+while IFS= read -r line; do
+    # Skip the header line
+    if [[ $line == "User ID"* ]]; then
+        continue
+    fi
+
+    # Extract user ID, used space, and soft limit
+    user_id=$(echo "$line" | awk '{print $1}')
+    used=$(echo "$line" | awk '{print $2}')
+    soft_limit=$(echo "$line" | awk '{print $3}')
+
+    # Check if the user is in the group
+    if [[ -n "${GROUP_USERS[$user_id]}" ]]; then
+        # Convert used and soft limit values to bytes
+        used_bytes=$(convert_to_bytes "$used")
+        soft_limit_bytes=$(convert_to_bytes "$soft_limit")
+
+        # Check if used space exceeds soft limit
+        if (( used_bytes > soft_limit_bytes )); then
+            # Construct notification message with username
+            message="User @$user_id has exceeded their soft limit ($used > $soft_limit)"
+            # Send notification to Teams channel
+            send_teams_notification "$message"
+        fi
+    fi
+done < quota_report.txt
