@@ -1,0 +1,50 @@
+{
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.3",
+    "body": [
+        {
+            "type": "TextBlock",
+            "text": "[${if(equals(triggerBody()?['alerts'][0]['status'], 'firing'), 'FIRING', 'RESOLVED')}] ${triggerBody()['alerts'][0]['labels']['alertname']} Alert",
+            "weight": "Bolder",
+            "size": "Large",
+            "color": "${if(equals(triggerBody()?['alerts'][0]['status'], 'firing'), 'Attention', 'Good')}",
+            "wrap": true
+        },
+        {
+            "type": "FactSet",
+            "facts": [
+                {
+                    "title": "Alert Name:",
+                    "value": "${triggerBody()['alerts'][0]['labels']['alertname']}"
+                },
+                {
+                    "title": "Severity:",
+                    "value": "${triggerBody()['alerts'][0]['labels']['severtiy']}"
+                },
+                {
+                    "title": "State Reason:",
+                    "value": "${triggerBody()['alerts'][0]['annotations']['grafana_state_reason']}"
+                },
+                {
+                    "title": "Summary:",
+                    "value": "${triggerBody()['alerts'][0]['annotations']['summary']}"
+                },
+                {
+                    "title": "Values:",
+                    "value": "${triggerBody()['alerts'][0]['valueString']}"
+                }
+            ]
+        },
+        {
+            "type": "TextBlock",
+            "text": "[Source](${triggerBody()['alerts'][0]['generatorURL']})",
+            "wrap": true
+        },
+        {
+            "type": "TextBlock",
+            "text": "[Silence](${triggerBody()['alerts'][0]['silenceURL']})",
+            "wrap": true
+        }
+    ]
+}
