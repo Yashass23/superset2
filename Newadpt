@@ -1,0 +1,75 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "[FIRING] ${triggerBody()['alerts'][0]['labels']['alertname']} Grafana",
+      "weight": "Bolder",
+      "size": "Large",
+      "color": "Attention",
+      "wrap": true,
+      "isVisible": "${equals(triggerBody()?['alerts'][0]['status'], 'firing')}"
+    },
+    {
+      "type": "TextBlock",
+      "text": "[RESOLVED] ${triggerBody()['alerts'][0]['labels']['alertname']} Grafana",
+      "weight": "Bolder",
+      "size": "Large",
+      "color": "Good",
+      "wrap": true,
+      "isVisible": "${equals(triggerBody()?['alerts'][0]['status'], 'resolved')}"
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "Alert Name:",
+          "value": "${triggerBody()['alerts'][0]['labels']['alertname']}"
+        },
+        {
+          "title": "Severity:",
+          "value": "${triggerBody()['alerts'][0]['labels']['severity']}"
+        },
+        {
+          "title": "State Reason:",
+          "value": "${triggerBody()['alerts'][0]['annotations']['grafana_state_reason']}"
+        },
+        {
+          "title": "Summary:",
+          "value": "${triggerBody()['alerts'][0]['annotations']['summary']}"
+        }
+      ]
+    },
+    {
+      "type": "TextBlock",
+      "text": "[View Source](http://localhost:3000/alerting/grafana/id_43/view)",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "[Silence Alert](http://localhost:3000/alerting/silence/new?alertmanager=grafana&matcher=alertname%3D${triggerBody()['alerts'][0]['labels']['alertname']}&matcher=grafana_folder%3Dalerts&matcher=severity%3Dcritical)",
+      "wrap": true
+    }
+  ],
+  "actions": [
+    {
+      "type": "ActionSet",
+      "actions": [
+        {
+          "type": "Action.OpenUrl",
+          "title": "View Source",
+          "url": "${triggerBody()['alerts'][0]['generatorURL']}"
+        },
+        {
+          "type": "Action.OpenUrl",
+          "title": "Silence Alert",
+          "url": "${triggerBody()['alerts'][0]['silenceURL']}"
+        }
+      ]
+    }
+  ],
+  "summary": "[FIRING] ${triggerBody()['alerts'][0]['labels']['alertname']} Grafana",
+  "contentType": "application/vnd.microsoft.card.adaptive"
+}
