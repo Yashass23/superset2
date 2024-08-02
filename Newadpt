@@ -29,8 +29,7 @@
           "value": "${triggerBody()['alerts'][0]['labels']['alertname']}"
         },
         {
-          "title": "Severity:",
-          "value": "${triggerBody()['alerts'][0]['labels']['severity']}"
+          ]}"${if(equals(triggerBody()?['alerts'][0]['labels']['severity'], null), 'N/A', triggerBody()['alerts'][0]['labels']['severity'])}
         },
         {
           "title": "State Reason:",
