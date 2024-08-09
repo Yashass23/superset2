@@ -1,0 +1,1 @@
+substring(triggerBody()?['text'], indexOf(triggerBody()?['text'], 'Used:'), 8)
