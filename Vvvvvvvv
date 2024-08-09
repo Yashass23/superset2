@@ -1,0 +1,8 @@
+substring(
+   split(
+       split(triggerBody()?['text'], 'Used: ')[1],
+       ','
+   )[0],
+   0,
+   5
+)
