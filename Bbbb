@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Webhook URL for Microsoft Teams channel
+TEAMS_WEBHOOK_URL="YOUR_TEAMS_WEBHOOK_URL"
+
+# Function to send message to Microsoft Teams channel
+send_teams_notification() {
+    message="$1"
+    payload="{\"text\": \"$message\"}"
+    curl -X POST -H "Content-Type: application/json" -d "$payload" "$TEAMS_WEBHOOK_URL"
+}
+
+# Function to convert size with K, M, G suffix to bytes, handling decimal points
+convert_to_bytes() {
+    size=$1
+    echo $size | awk '{
+        val = substr($0, 1, length($0)-1);
+        unit = substr($0, length($0), 1);
+        if (unit == "K") {
+            printf "%.0f\n", val * 1024;
+        } else if (unit == "M") {
+            printf "%.0f\n", val * 1024 * 1024;
+        } else if (unit == "G") {
+            printf "%.0f\n", val * 1024 * 1024 * 1024;
+        } else {
+            printf "%.0f\n", $0;
+        }
+    }'
+}
+
+# Define the user to check and the memory limit
+TARGET_USER="ttyy"
+LIMIT_BYTES=$(convert_to_bytes "3G")
+
+# Get the list of users in the group
+GROUP_NAME="uzwu_rsw"
+USER_LIST=$(getent group $GROUP_NAME | awk -F: '{print $4}' | tr ',' ' ')
+IFS=' ' read -r -a USERS <<<"$USER_LIST"
+
+# Generate quota report and save it to a file
+xfs_quota -X -c "report -h" /stripped > quota_report.txt
+
+# Read the quota report file line by line
+while IFS= read -r line; do
+    # Skip the header line
+    if [[ $line == "User ID"* ]]; then
+        continue
+    fi
+
+    # Extract user ID and used space
+    user_id=$(echo "$line" | awk '{print $1}')
+    used=$(echo "$line" | awk '{print $2}')
+
+    # Check if the user is the target user
+    if [[ "$user_id" == "$TARGET_USER" ]]; then
+        # Convert used value to bytes
+        used_bytes=$(convert_to_bytes "$used")
+
+        # Check if used space exceeds the limit
+        if (( used_bytes > LIMIT_BYTES )); then
+            # Construct notification message with username
+            message="User @$user_id has exceeded their memory usage limit (Used: $used, Limit: 3G)"
+            # Send notification to Teams channel
+            send_teams_notification "$message"
+        fi
+    fi
+done < quota_report.txt
