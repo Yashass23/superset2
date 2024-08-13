@@ -1,0 +1,41 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "${triggerBody()?['Summary']}",
+      "weight": "Bolder",
+      "size": "Medium",
+      "color": "${if(equals(triggerBody()?['themeColor'], '008000'), 'Good', 'Attention')}",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "Host Notes:",
+      "weight": "Bolder",
+      "wrap": true
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "Host:",
+          "value": "${triggerBody()?['sections'][0]['facts'][0]['value']}"
+        },
+        {
+          "title": "Details:",
+          "value": "${triggerBody()?['sections'][0]['facts'][1]['value']}"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "View in Nagios",
+      "url": "${triggerBody()?['potentialAction'][0]['targets'][0]['uri']}"
+    }
+  ]
+}
