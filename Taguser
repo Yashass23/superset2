@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Define constants
+GROUP_ID="8a33eard-276d-40c1-3-493d94361a"  # Replace with your Azure AD group ID
+WEBHOOK_URL="https://your_power_automate_webhook_url"  # Replace with your Power Automate webhook URL
+PREVIOUS_USERS_FILE="previous_users.txt"
+CURRENT_USERS_FILE="current_users.txt"
+
+# Fetch current users' email addresses from Azure AD group and store them in a file
+az ad group member list --group "$GROUP_ID" --query "[].userPrincipalName" --output tsv > "$CURRENT_USERS_FILE"
+
+# Check if previous file exists
+if [ -f "$PREVIOUS_USERS_FILE" ]; then
+    # Compare current users with previous users to find new users
+    new_users=$(comm -13 <(sort "$PREVIOUS_USERS_FILE") <(sort "$CURRENT_USERS_FILE"))
+
+    if [ -z "$new_users" ]; then
+        echo "No new users found in the group."
+    else
+        echo "New users added to the group:"
+
+        # Process each new email address
+        while IFS= read -r email; do
+            echo "Processing new user - Email: $email"
+
+            # Prepare payload for Power Automate webhook
+            json_payload=$(cat <<EOF
+{
+    "email": "$email"
+}
+EOF
+            )
+
+            # Send the new user information to Power Automate
+            curl -X POST -H "Content-Type: application/json" -d "$json_payload" "$WEBHOOK_URL"
+            echo "Sent data to Power Automate for user $email."
+        done <<< "$new_users"
+    fi
+else
+    echo "No previous data found. All users will be considered new."
+    cat "$CURRENT_USERS_FILE"
+fi
+
+# Overwrite the previous users file with the current data for the next comparison
+mv "$CURRENT_USERS_FILE" "$PREVIOUS_USERS_FILE"
