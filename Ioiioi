@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Azure AD Group name
+GROUP_NAME="users-wb"
+
+# Webhook URL for Power Automate
+WEBHOOK_URL="https://your-webhook-url-here"
+
+# Fetch Group ID from Azure
+group_id=$(az ad group show --group "$GROUP_NAME" --query objectId -o tsv)
+
+# Fetch new users' email addresses from Azure AD
+az ad group member list --group $group_id --query [].userPrincipalName -o tsv > new_users_email.txt
+
+# Fetch new users' names using getent
+getent group $GROUP_NAME | awk -F: '{print $4}' | tr ',' '\n' > new_users_name.txt
+
+# Compare new users' names with previous names file
+if [ -f "previous_users_name.txt" ]; then
+    comm -13 <(sort previous_users_name.txt) <(sort new_users_name.txt) > added_users_name.txt
+else
+    echo "No previous user list found, assuming first run."
+    cat new_users_name.txt > added_users_name.txt
+fi
+
+# Compare new users' email addresses with previous emails
+if [ -f "previous_users_email.txt" ]; then
+    comm -13 <(sort previous_users_email.txt) <(sort new_users_email.txt) > added_users_email.txt
+else
+    echo "No previous email list found, assuming first run."
+    cat new_users_email.txt > added_users_email.txt
+fi
+
+# Update the previous users' files for future comparison
+mv new_users_name.txt previous_users_name.txt
+mv new_users_email.txt previous_users_email.txt
+
+# Output added users and send to Power Automate if new users are found
+if [ -s "added_users_name.txt" ]; then
+    echo "New users added to the group:"
+    paste added_users_name.txt added_users_email.txt | while IFS=$'\t' read -r name email; do
+        echo "Username: $name, Email: $email"
+
+        # Prepare simple JSON payload for Power Automate
+        json_data="{\"username\": \"$name\", \"email\": \"$email\"}"
+
+        # Send data to Power Automate via webhook
+        curl -X POST -H "Content-Type: application/json" -d "$json_data" "$WEBHOOK_URL"
+    done
+else
+    echo "No new users added today."
+fi
