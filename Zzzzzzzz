@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# Webhook URL for Power Automate
+WEBHOOK_URL="https://your-webhook-url-here"
+
+# Azure AD Group name and Group ID
+GROUP_NAME="users-wb"
+group_id="Ba33eab5-276d-40c1-9£339314361a"  # Replace this with your actual Group ID if necessary
+
+# Fetch new users' email addresses from Azure AD
+az ad group member list --group $group_id --query [].userPrincipalName -o tsv > new_users_email.txt
+
+# Fetch new users' names using getent
+getent group $GROUP_NAME | awk -F: '{print $4}' | tr ',' '\n' > new_users_name.txt
+
+# Sort the new users files before comparison
+sort new_users_name.txt -o new_users_name_sorted.txt
+sort new_users_email.txt -o new_users_email_sorted.txt
+
+# Compare new users' names with previous names file
+if [ -f "previous_users_name.txt" ]; then
+    # Sort the previous users file
+    sort previous_users_name.txt -o previous_users_name_sorted.txt
+
+    # Find the new users by comparing sorted files (names)
+    comm -13 previous_users_name_sorted.txt new_users_name_sorted.txt > added_users_name.txt
+else
+    echo "No previous user list found, assuming first run."
+    cp new_users_name_sorted.txt added_users_name.txt
+fi
+
+# Compare new users' email addresses with previous emails
+if [ -f "previous_users_email.txt" ]; then
+    # Sort the previous users email file
+    sort previous_users_email.txt -o previous_users_email_sorted.txt
+
+    # Find the new users by comparing sorted files (emails)
+    comm -13 previous_users_email_sorted.txt new_users_email_sorted.txt > added_users_email.txt
+else
+    echo "No previous email list found, assuming first run."
+    cp new_users_email_sorted.txt added_users_email.txt
+fi
+
+# Update the previous users' files for future comparison
+cp new_users_name_sorted.txt previous_users_name.txt
+cp new_users_email_sorted.txt previous_users_email.txt
+
+# Output added users and send to Power Automate if new users are found
+if [ -s "added_users_name.txt" ]; then
+    echo "New users added to the group:"
+    paste added_users_name.txt added_users_email.txt | while IFS=$'\t' read -r name email; do
+        echo "Username: $name, Email: $email"
+
+        # Prepare simple JSON payload for Power Automate
+        json_data="{\"username\": \"$name\", \"email\": \"$email\"}"
+
+        # Send data to Power Automate via webhook
+        curl -X POST -H "Content-Type: application/json" -d "$json_data" "$WEBHOOK_URL"
+    done
+else
+    echo "No new users added today."
+fi
