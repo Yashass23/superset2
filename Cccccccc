@@ -1,0 +1,35 @@
+{
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "type": "AdaptiveCard",
+  "version": "1.3",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "User Information",
+      "weight": "Bolder",
+      "size": "Medium",
+      "wrap": true
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "Abs:",
+          "value": "@{split(outputs('Compose'), ' ')[1]}" 
+        },
+        {
+          "title": "Gejsj:",
+          "value": "@{split(outputs('Compose'), ' ')[3]}" 
+        },
+        {
+          "title": "Desjj:",
+          "value": "@{split(outputs('Compose'), ' ')[5]}"
+        },
+        {
+          "title": "Hejjsj:",
+          "value": "@{split(outputs('Compose'), ' ')[7]}"
+        }
+      ]
+    }
+  ]
+}
